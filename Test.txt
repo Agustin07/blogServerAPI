@@ -1,0 +1,16 @@
+Request insert:
+
+localhost:7000/blog_post/c/?post_title=Looking for Alaska is amazing&post_content=Hi, first of al i want to say that I really love that book!&post_author=Agustin M.
+
+localhost:7000/blog_post/c/?post_title=Normalization is amazing&post_content=Is a process of efficiently organizing data in a database&post_author=Fati
+
+localhost:7000/blog_post/c/?post_title=Save the world is an amazing game!&post_content=STW better than playing Battle Royal&post_author=Agustin M.
+
+localhost:7000/blog_post/c/?post_title=My Aunt is amazing!&post_content=I love how my aunt cooks&post_author=Adri
+
+Request update:
+
+localhost:7000/blog_post/u/?post_id=4&post_title=Im hungry!&post_content=Lets talk about food, my passion
+
+localhost:7000/blog_post/u/?post_id=3&post_title=Time to sleep&post_content=Before sleep you must...
+
