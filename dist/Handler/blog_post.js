@@ -28,37 +28,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.update = exports.insert = exports.blog_postHandler = void 0;
+exports.retrieve = exports.deletePost = exports.update = exports.insert = void 0;
 const DBconection_1 = require("../DBconection");
 ;
 const url = __importStar(require("url"));
-function blog_postHandler(request, response, action) {
-    switch (request.method) {
-        case 'POST':
-            // -- INSERT
-            try {
-                return exports.insert(request, response);
-            }
-            catch (e) {
-                return Promise.reject();
-            }
-        case 'PUT':
-            try {
-                return exports.update(request, response);
-            }
-            catch (e) {
-                return Promise.reject();
-            }
-        case 'DELETE':
-            // -- DELETE
-            break;
-        case 'GET':
-            // -- RETRIEVE
-            break;
-    }
-    return Promise.reject(response.write(404));
-}
-exports.blog_postHandler = blog_postHandler;
 exports.insert = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     let params = url.parse(req.url, true).query;
     if (req.method === 'POST') {
@@ -70,49 +43,106 @@ exports.insert = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
             };
             let sql = "INSERT INTO BLOG_POST (TITLE_TEXT, BODY_TEXT, AUTHOR) ";
             sql += " VALUES ('" + newPost.title + "','" + newPost.content + "','" + newPost.author + "'); ";
-            try {
-                let resultQuery = yield DBconection_1.connectpg.query(sql);
-                resp.writeHead(200, { "Content-Type": "text/plain" }).write('Inserted!');
-                return resp;
-            }
-            catch (e) {
-                console.log(e);
-                resp.writeHead(500).write('Internal Server error');
-                return Promise.reject(resp.end());
-            }
+            let resultQuery = yield DBconection_1.connectpg.query(sql)
+                .then(res => resp.writeHead(200, { "Content-Type": "text/plain" }).write('Post saved!'))
+                .catch(e => resp.writeHead(500).write('DB: Something went wrong trying to insert!'));
+            return resp;
         }
+        resp.writeHead(400, 'Bad request').write("Sorry, we coulnd't handle this! You submited a post id, maybe you shoult try an udpade!");
+        return resp;
     }
-    resp.writeHead(500).write('Internal Server error');
-    return Promise.reject(resp.end());
+    resp.writeHead(400, 'Bad request').write("Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to create a post");
+    return resp;
 });
 exports.update = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     let params = url.parse(req.url, true).query;
     if (req.method === 'PUT') {
-        if (!!(params.post_id)) { //undefinido
-            let newPost = {
+        if (!!(params.post_id)) {
+            let updtPost = {
                 id_post: Number.parseInt(params.post_id),
                 title: String(params.post_title),
                 content: String(params.post_content)
             };
-            let sql = "UPDATE BLOG_POST SET TITLE_TEXT='" + newPost.title + "', BODY_TEXT='" + newPost.content + "' WHERE ID_POST=" + newPost.id_post + ";";
-            try {
-                console.log(sql);
-                let resultQuery = yield DBconection_1.connectpg.query(sql);
-                resp.writeHead(200, { "Content-Type": "text/plain" }).write('Updated!');
-                return resp;
+            let exists = yield DBconection_1.connectpg.query('SELECT COUNT(*) AS FOUND FROM BLOG_POST WHERE ID_POST=' + updtPost.id_post + ' AND ISDELETED=FALSE LIMIT 1;');
+            let sql = "UPDATE BLOG_POST SET TITLE_TEXT='" + updtPost.title + "', BODY_TEXT='" + updtPost.content + "' "
+                + " WHERE ID_POST=" + updtPost.id_post + " AND ISDELETED=FALSE;";
+            if (Number.parseInt(exists.rows[0].found) === 1) {
+                let resultQuery = yield DBconection_1.connectpg.query(sql)
+                    .then(res => resp.writeHead(200).write('Post updated!'))
+                    .catch(e => resp.writeHead(500).write('DB: Something went wrong trying to update! '));
             }
-            catch (e) {
-                console.log(e);
-                resp.writeHead(500).write('Internal Server error');
-                return Promise.reject(resp.end());
+            else {
+                resp.writeHead(404).write('Post not found!');
             }
+            return resp;
         }
+        resp.writeHead(404, 'Not Found').write("Sorry, we coulnd't handle this! U haven't submited a post id");
+        return resp;
     }
-    resp.writeHead(500).write('Internal Server error');
-    return Promise.reject(resp.end());
+    resp.writeHead(400, 'Bad request').write("Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to update a post");
+    return resp;
     //let dbresponse : QueryResult  = await connectpg.query("INSERT INTO SELECT * FROM blog_post ORDER BY id_post ASC;");
     //console.log(dbresponse.rows);
     //resp.writeHead(200,{"Content-Type": "text/plain"}).write(JSON.stringify(dbresponse.rows));
     //resp.write(dbresponse.rows)
     //return resp;
+});
+exports.deletePost = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+    let params = url.parse(req.url, true).query;
+    if (req.method === 'DELETE') {
+        if (!!(params.post_id)) {
+            let id_post = Number.parseInt(params.post_id);
+            let exists = yield DBconection_1.connectpg.query('SELECT COUNT(*) AS FOUND FROM BLOG_POST WHERE ID_POST=' + id_post + ' AND ISDELETED=FALSE LIMIT 1;');
+            let sql = "UPDATE BLOG_POST SET ISDELETED=TRUE WHERE ID_POST=" + id_post + ";";
+            if (Number.parseInt(exists.rows[0].found) === 1) {
+                let resultQuery = yield DBconection_1.connectpg.query(sql).then(res => resp.writeHead(200).write('Post deleted!'))
+                    .catch(e => resp.writeHead(500).write('DB: Something went wrong trying to delete! '));
+            }
+            else {
+                resp.writeHead(404).write('Post not found!');
+            }
+            return resp;
+        }
+        resp.writeHead(404, 'Not Found').write("Sorry, we coulnd't handle this! U haven't submited a post id");
+        return resp;
+    }
+    resp.writeHead(400, 'Bad request').write("Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to delete a post");
+    return resp;
+});
+exports.retrieve = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+    let params = url.parse(req.url, true).query;
+    if (req.method === 'GET') {
+        if (!!(params.post_id)) {
+            let id_post = Number.parseInt(params.post_id);
+            let exists = yield DBconection_1.connectpg.query('SELECT COUNT(*) AS FOUND FROM BLOG_POST WHERE ID_POST=' + id_post + ' AND ISDELETED=FALSE LIMIT 1;');
+            let sql = "SELECT P.ID_POST AS POST_ID, P.TITLE_TEXT AS POST_TITLE, " +
+                " P.BODY_TEXT AS POST_CONTENT, P.AUTHOR AS POST_AUTHOR, P.DATE_POSTED AS POSTED_DATE " +
+                " FROM BLOG_POST P WHERE ID_POST=" + id_post + " AND P.ISDELETED=FALSE;";
+            let comment_sql = "SELECT C.ID_POST AS POST_ID, C.ID_COMMENT AS COMMENT_ID, C.COMMENT AS COMMENT_CONTENT, " +
+                " C.USERNAME AS COMMENT_USERNAME, C.DATE_POSTED AS POSTED_DATE  " +
+                "FROM POST_COMMENT C WHERE C.ID_POST=" + id_post + " AND C.ISDELETED=FALSE;";
+            if (Number.parseInt(exists.rows[0].found) === 1) {
+                let myPost = yield DBconection_1.connectpg.query(sql);
+                yield DBconection_1.connectpg.query(comment_sql).then(res => {
+                    let postData = myPost.rows;
+                    let commentsData = res.rows;
+                    let listofPost = postData.map((pval) => {
+                        pval.comments = commentsData.filter(cval => cval.post_id === pval.post_id);
+                        return pval;
+                    });
+                    console.log(JSON.stringify(listofPost));
+                    resp.writeHead(200).write(JSON.stringify(listofPost));
+                })
+                    .catch(e => resp.writeHead(500).write('DB: Something went wrong trying to retrieve a single post! ' + e.stack));
+            }
+            else {
+                resp.writeHead(404).write('Post not found!');
+            }
+            return resp;
+        }
+        resp.writeHead(404, 'Not Found').write("Sorry, we coulnd't handle this! U haven't submited a post id");
+        return resp;
+    }
+    resp.writeHead(400, 'Bad request').write("Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to retrieve a post");
+    return resp;
 });

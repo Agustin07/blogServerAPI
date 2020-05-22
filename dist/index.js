@@ -33,7 +33,7 @@ let server = http.createServer(function (request, response) {
     }
     catch (e) {
         console.log(e);
-        response.end('Error');
+        response.end('\nError\n');
     }
 });
 server.listen(7000);

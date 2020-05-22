@@ -8,37 +8,7 @@ interface blogPost {
     title : string,
     content: string,
     author?: string,
-}
-
-
-export function blog_postHandler(request: IncomingMessage, response:ServerResponse ,action: string): Promise<ServerResponse>{
-    switch (request.method) {
-        case 'POST':
-            // -- INSERT
-            try{
-                return insert(request,response);
-            }
-            catch(e) {
-                return Promise.reject();
-            }
-        case 'PUT':
-            try{
-                return update(request,response);
-            }
-            catch(e) {
-                return Promise.reject();
-            }
-    
-        case 'DELETE':
-            // -- DELETE
-       
-        break;
-        case 'GET':
-            // -- RETRIEVE
-
-        break;
-    }
-    return Promise.reject(response.write(404));
+    date_posted ?: Date
 }
 
 
@@ -55,52 +25,115 @@ export const insert = async (req: IncomingMessage,resp: ServerResponse) : Promis
 
                  let sql ="INSERT INTO BLOG_POST (TITLE_TEXT, BODY_TEXT, AUTHOR) ";
                  sql += " VALUES ('"+newPost.title+"','"+newPost.content+"','"+newPost.author+"'); ";
-    
-                try {
-                    let resultQuery = await connectpg.query(sql);
-                    resp.writeHead(200,{"Content-Type": "text/plain"}).write('Inserted!');
-                    return resp;
-                } catch (e) {
-                    console.log(e);
-                    resp.writeHead(500).write('Internal Server error');
-                    return Promise.reject(resp.end());
-                }
-                 
+
+                 let resultQuery = await connectpg.query(sql)
+                    .then(res => resp.writeHead(200,{"Content-Type": "text/plain"}).write('Post saved!'))
+                    .catch(e => resp.writeHead(500).write('DB: Something went wrong trying to insert!'));
+                return resp;
             }
+            resp.writeHead(400,'Bad request').write("Sorry, we coulnd't handle this! You submited a post id, maybe you shoult try an udpade!");
+            return resp;
         }
-        resp.writeHead(500).write('Internal Server error');
-        return Promise.reject(resp.end());
+        resp.writeHead(400,'Bad request').write("Sorry, we coulnd't handle this! Invalid method "+req.method+" at traying to create a post");
+        return resp;
 }
 
 
 export const update = async (req: IncomingMessage,resp: ServerResponse) : Promise<ServerResponse> => {
     let params=url.parse(req.url as string,true).query;
     if(req.method==='PUT') {
-        if(!!(params.post_id)){ //undefinido
-            let newPost : blogPost = {
+        if(!!(params.post_id)){
+            let updtPost : blogPost = {
                 id_post: Number.parseInt(params.post_id as string),
                 title : String(params.post_title as string),
                 content: String(params.post_content)
             } 
-            let sql = "UPDATE BLOG_POST SET TITLE_TEXT='"+newPost.title+"', BODY_TEXT='"+newPost.content+"' WHERE ID_POST="+newPost.id_post+";";
-            
-            try {
-                let resultQuery = await connectpg.query(sql);
-                resp.writeHead(200,{"Content-Type": "text/plain"}).write('Updated!');
-                return resp;
-            } catch (e) {
-                console.log(e);
-                resp.writeHead(500).write('Internal Server error');
-                return Promise.reject(resp.end());
+
+            let exists = await connectpg.query('SELECT COUNT(*) AS FOUND FROM BLOG_POST WHERE ID_POST='+updtPost.id_post+' AND ISDELETED=FALSE LIMIT 1;');
+        
+            let sql = "UPDATE BLOG_POST SET TITLE_TEXT='"+updtPost.title+"', BODY_TEXT='"+updtPost.content+"' "
+                        + " WHERE ID_POST="+updtPost.id_post+" AND ISDELETED=FALSE;";
+
+            if ( Number.parseInt(exists.rows[0].found) === 1){
+                let resultQuery = await connectpg.query(sql)
+                .then(res => resp.writeHead(200).write('Post updated!'))
+                .catch(e => resp.writeHead(500).write('DB: Something went wrong trying to update! '));
+            } else {
+                resp.writeHead(404).write('Post not found!');
             }
-            
+    
+            return resp;
         }
+        resp.writeHead(404,'Not Found').write("Sorry, we coulnd't handle this! U haven't submited a post id");
+        return resp;
     }
-    resp.writeHead(500).write('Internal Server error');
-    return Promise.reject(resp.end());
+    resp.writeHead(400,'Bad request').write("Sorry, we coulnd't handle this! Invalid method "+req.method+" at traying to update a post");
+    return resp;
     //let dbresponse : QueryResult  = await connectpg.query("INSERT INTO SELECT * FROM blog_post ORDER BY id_post ASC;");
     //console.log(dbresponse.rows);
     //resp.writeHead(200,{"Content-Type": "text/plain"}).write(JSON.stringify(dbresponse.rows));
     //resp.write(dbresponse.rows)
     //return resp;
+}
+
+export const deletePost = async (req : IncomingMessage, resp : ServerResponse ) : Promise<ServerResponse> => {
+    let params=url.parse(req.url as string,true).query;
+    if (req.method==='DELETE'){
+        if(!!(params.post_id)){
+            let id_post : number = Number.parseInt(params.post_id as string);
+            let exists = await connectpg.query('SELECT COUNT(*) AS FOUND FROM BLOG_POST WHERE ID_POST='+id_post+' AND ISDELETED=FALSE LIMIT 1;');
+            let sql = "UPDATE BLOG_POST SET ISDELETED=TRUE WHERE ID_POST="+id_post+";";
+        
+            if ( Number.parseInt(exists.rows[0].found) === 1){
+                let resultQuery = await connectpg.query(sql).then(res => resp.writeHead(200).write('Post deleted!'))
+                .catch(e => resp.writeHead(500).write('DB: Something went wrong trying to delete! '));
+            } else {
+                resp.writeHead(404).write('Post not found!');
+            }
+            return resp;
+        }
+        resp.writeHead(404,'Not Found').write("Sorry, we coulnd't handle this! U haven't submited a post id");
+        return resp;
+    }
+    resp.writeHead(400,'Bad request').write("Sorry, we coulnd't handle this! Invalid method "+req.method+" at traying to delete a post");
+    return resp;
+}
+
+export const retrieve = async (req : IncomingMessage, resp : ServerResponse ) : Promise<ServerResponse> => {
+    let params=url.parse(req.url as string,true).query;
+    if (req.method==='GET'){
+        if(!!(params.post_id)){
+            let id_post : number = Number.parseInt(params.post_id as string);
+            let exists = await connectpg.query('SELECT COUNT(*) AS FOUND FROM BLOG_POST WHERE ID_POST='+id_post+' AND ISDELETED=FALSE LIMIT 1;');
+            let sql = "SELECT P.ID_POST AS POST_ID, P.TITLE_TEXT AS POST_TITLE, " +
+                " P.BODY_TEXT AS POST_CONTENT, P.AUTHOR AS POST_AUTHOR, P.DATE_POSTED AS POSTED_DATE " +
+                " FROM BLOG_POST P WHERE ID_POST="+id_post+" AND P.ISDELETED=FALSE;";
+
+            let comment_sql ="SELECT C.ID_POST AS POST_ID, C.ID_COMMENT AS COMMENT_ID, C.COMMENT AS COMMENT_CONTENT, " + 
+            " C.USERNAME AS COMMENT_USERNAME, C.DATE_POSTED AS POSTED_DATE  " +
+            "FROM POST_COMMENT C WHERE C.ID_POST="+id_post+" AND C.ISDELETED=FALSE;"
+           
+            if ( Number.parseInt(exists.rows[0].found) === 1){
+                let myPost =await connectpg.query(sql);
+                await connectpg.query(comment_sql).then(res => {
+                    let postData= myPost.rows;
+                    let commentsData=res.rows;
+                    const listofPost = postData.map((pval) => {
+                        pval.comments = commentsData.filter(cval => cval.post_id===pval.post_id);
+                        return pval;
+                    });
+                    resp.writeHead(200).write(JSON.stringify(listofPost));     
+                    
+                })
+                .catch(e => resp.writeHead(500).write('DB: Something went wrong trying to retrieve a single post! '+e.stack));
+            } else {
+                resp.writeHead(404).write('Post not found!');
+            }
+            return resp;
+        }
+        resp.writeHead(404,'Not Found').write("Sorry, we coulnd't handle this! U haven't submited a post id");
+        return resp;
+    }
+    resp.writeHead(400,'Bad request').write("Sorry, we coulnd't handle this! Invalid method "+req.method+" at traying to retrieve a post");
+    return resp;
 }

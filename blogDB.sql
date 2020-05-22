@@ -3,7 +3,7 @@
 /* Created on:     18/5/2020 12:51:43                           */
 /*==============================================================*/
 
-
+/*
 drop index BLOG_POST_PK;
 
 drop table BLOG_POST;
@@ -12,7 +12,9 @@ drop index MAY_BE_ADDED_TO_FK;
 
 drop index POST_COMMENT_PK;
 
-drop table POST_COMMENT;
+drop table POST_COMMENT; 
+
+*/
 
 /*==============================================================*/
 /* Table: BLOG_POST                                             */
@@ -23,6 +25,7 @@ create table BLOG_POST (
    BODY_TEXT            VARCHAR(1000)        not null,
    AUTHOR               VARCHAR(50)          not null,
    ISDELETED            BOOLEAN         default false,
+   DATE_POSTED          TIMESTAMP       default now(), 
    constraint PK_BLOG_POST primary key (ID_POST)
 );
 
@@ -42,6 +45,7 @@ create table POST_COMMENT (
    COMMENT              VARCHAR(500)         not null,
    USERNAME             VARCHAR(50)          null,
    ISDELETED            BOOLEAN         default false,
+   DATE_POSTED          TIMESTAMP       default now(), 
    constraint PK_POST_COMMENT primary key (ID_COMMENT, ID_POST)
 );
 
