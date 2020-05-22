@@ -31,15 +31,12 @@ localhost:7000/blog_post/u/?post_id=4&post_title=Im hungry!&post_content=Lets ta
 
 ## How to write a request:
 
+| Action |Method  |   Route | Description                         |
+|----------------|---------------|----------------|-----------|
+|Create|   POST        |      /blog_post/c/         |insert post  |
+|Update          |    PUT       | /blog_post/u/ |   update post   |
+|Delete         | DELETE|/blog_post/d/| delete post|
+|Retrieve |  GET |  /blog_post/r1/     |  retrieve one post by id |
+||  |  /blog_post/rall/     | retrieve a list of post  |
 
-|     Action      |      Method    |             Route              |        Description        |
-|     u need      |                |     Entity    |     Action     |                           |
-|-----------------|----------------|--------------------------------|---------------------------|
-|      Create     |     POST       |  /blog_post   |     /c/        |       insert post         |
-|                 |                | /post_comment |     /c/        |      insert comment       |
-|      Update     |     PUT        |  /blog_post   |     /u/        |       update post         |
-|                 |                | /post_comment |     /u/        |      update comment       |
-|      Delete     |    DELETE      |  /blog_post   |     /d/        |       delete post         |
-|                 |                | /post_comment |     /d/        |      delete comment       |
-|     Retrieve    |      GET       |  /blog_post   |     /r/        |  retrieve one post by id  |
-|                 |                |  /blog_post   |     /r2/       |  retrieve a list of post  |
+
