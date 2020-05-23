@@ -28,88 +28,89 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteComment = exports.update = exports.insert = void 0;
+exports.retrieveCommentsByPostId = exports.deleteComment = exports.update = exports.insert = void 0;
 const DBconection_1 = require("../DBconection");
-;
+const dbQuerys = __importStar(require("../DBconection"));
 const url = __importStar(require("url"));
 exports.insert = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     let params = url.parse(req.url, true).query;
-    if (req.method === 'POST') {
-        if (!!(params.post_id)) {
-            let pComment = {
-                id_post: Number.parseInt(params.post_id) || 0,
-                comment: String(params.comment),
-                username: String(params.username)
-            };
-            let exists = yield DBconection_1.connectpg.query('SELECT COUNT(*) AS FOUND FROM BLOG_POST WHERE ID_POST=' + pComment.id_post + ' AND ISDELETED=FALSE LIMIT 1;');
-            let sql = "INSERT INTO POST_COMMENT (ID_POST, COMMENT, USERNAME) ";
-            sql += " VALUES (" + pComment.id_post + ",'" + pComment.comment + "','" + pComment.username + "'); ";
-            if (Number.parseInt(exists.rows[0].found) === 1) {
-                let resultQuery = yield DBconection_1.connectpg.query(sql)
-                    .then(res => resp.writeHead(200, { "Content-Type": "text/plain" }).write('Comment saved!'))
-                    .catch(e => resp.writeHead(500).write('DB: Something went wrong trying to save comment!'));
-            }
-            else {
-                resp.writeHead(404).write('Post not found!');
-            }
-            return resp;
-        }
-        resp.writeHead(404, 'Not Found').write("Sorry, we coulnd't handle this! U haven't submited a post id");
-        return resp;
-    }
-    resp.writeHead(400, 'Bad request').write("Sorry, we coulnd't handle this!  Invalid method " + req.method + " at traying to create a comment");
-    return resp;
+    if (req.method !== 'POST')
+        return { code: 400, result: "Sorry, we coulnd't handle this!  Invalid method " + req.method + " at traying to create a comment" };
+    if (!(params.post_id))
+        return { code: 400, result: "Sorry, we coulnd't handle this! U haven't submited a post id" };
+    let idPost = Number.parseInt(params.post_id);
+    if (Number.isNaN(idPost))
+        return { code: 400, result: "Sorry, we coulnd't handle this! post id should be a number" };
+    let pComment = {
+        id_post: idPost,
+        comment: String(params.comment),
+        username: String(params.username)
+    };
+    let exists = yield DBconection_1.connectpg.query(dbQuerys.queryExistPost, [pComment.id_post]);
+    if (Number.parseInt(exists.rows[0].found) !== 1)
+        return { code: 404, result: "Post not found!" };
+    let respHandler = { code: 404, result: 'not found!' };
+    yield DBconection_1.connectpg.query(dbQuerys.sqlInsertComment, [pComment.id_post, pComment.comment, pComment.username])
+        .then(res => respHandler = { code: 200, result: 'Comment saved!' })
+        .catch(e => respHandler = { code: 500, result: 'DB: Something went wrong trying to save comment!' });
+    return respHandler;
 });
 exports.update = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     let params = url.parse(req.url, true).query;
-    if (req.method === 'PUT') {
-        if (!!(params.comment_id)) {
-            let pComment = {
-                id_comment: Number.parseInt(params.comment_id),
-                id_post: Number.parseInt(params.post_id),
-                comment: String(params.comment),
-                username: String(params.username)
-            };
-            let exists = yield DBconection_1.connectpg.query('SELECT COUNT(C.*) AS FOUND FROM POST_COMMENT C JOIN BLOG_POST P ON P.ID_POST=C.ID_POST ' +
-                ' WHERE C.ID_COMMENT=' + pComment.id_comment + ' AND P.ISDELETED=FALSE AND C.ISDELETED=FALSE;');
-            let sql = "UPDATE POST_COMMENT SET COMMENT='" + pComment.comment + "', USERNAME='" + pComment.username + "' "
-                + " WHERE ID_COMMENT=" + pComment.id_comment + " AND ISDELETED=FALSE;";
-            if (Number.parseInt(exists.rows[0].found) === 1) {
-                let resultQuery = yield DBconection_1.connectpg.query(sql)
-                    .then(res => resp.writeHead(200).write('Comment updated!'))
-                    .catch(e => resp.writeHead(500).write('DB: Something went wrong trying to update the comment! '));
-            }
-            else {
-                resp.writeHead(404).write('Comment or post not found!');
-            }
-            return resp;
-        }
-        resp.writeHead(404, 'Not Found').write("Sorry, we coulnd't handle this! U haven't submited a comment id");
-        return resp;
-    }
-    resp.writeHead(400, 'Bad request').write("Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to update a comment");
-    return resp;
+    if (req.method !== 'PUT')
+        return { code: 400, result: "Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to update a comment" };
+    if (!(params.comment_id))
+        return { code: 404, result: "Sorry, we coulnd't handle this! U haven't submited a comment id" };
+    let idComment = Number.parseInt(params.comment_id);
+    if (Number.isNaN(idComment))
+        return { code: 400, result: "Sorry, we coulnd't handle this! comment id should be a number" };
+    let pComment = {
+        id_comment: idComment,
+        comment: String(params.comment),
+        username: String(params.username)
+    };
+    let exists = yield DBconection_1.connectpg.query(dbQuerys.queryExistComment, [pComment.id_comment]);
+    if (Number.parseInt(exists.rows[0].found) !== 1)
+        return { code: 404, result: "Post or comment not found!" };
+    let respHandler = { code: 404, result: 'not found!' };
+    yield DBconection_1.connectpg.query(dbQuerys.sqlUpdateComment, [pComment.comment, pComment.username, pComment.id_comment])
+        .then(res => respHandler = { code: 200, result: 'Comment updated!' })
+        .catch(e => respHandler = { code: 500, result: 'DB: Something went wrong trying to update a comment!' });
+    return respHandler;
 });
 exports.deleteComment = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     let params = url.parse(req.url, true).query;
-    if (req.method === 'DELETE') {
-        if (!!(params.comment_id)) {
-            let id_comment = Number.parseInt(params.comment_id);
-            let exists = yield DBconection_1.connectpg.query('SELECT COUNT(C.*) AS FOUND FROM POST_COMMENT C JOIN BLOG_POST P ON P.ID_POST=C.ID_POST ' +
-                ' WHERE C.ID_COMMENT=' + id_comment + ' AND P.ISDELETED=FALSE AND C.ISDELETED=FALSE;');
-            let sql = "UPDATE POST_COMMENT SET ISDELETED=TRUE WHERE ID_COMMENT=" + id_comment + ";";
-            if (Number.parseInt(exists.rows[0].found) === 1) {
-                let resultQuery = yield DBconection_1.connectpg.query(sql).then(res => resp.writeHead(200).write('Comment deleted!'))
-                    .catch(e => resp.writeHead(500).write('DB: DB: Something went wrong trying to delete! '));
-            }
-            else {
-                resp.writeHead(404).write('Post or comment not found!');
-            }
-            return resp;
-        }
-        resp.writeHead(404, 'Not Found').write("Sorry, we coulnd't handle this! U haven't submited a comment id");
-        return resp;
-    }
-    resp.writeHead(400, 'Bad request').write("Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to delete a comment");
-    return resp;
+    if (req.method !== 'DELETE')
+        return { code: 400, result: "Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to delete a comment" };
+    if (!(params.comment_id))
+        return { code: 404, result: "Sorry, we coulnd't handle this! U haven't submited a comment id" };
+    let id_comment = Number.parseInt(params.comment_id);
+    if (Number.isNaN(id_comment))
+        return { code: 400, result: "Sorry, we coulnd't handle this! comment id should be a number" };
+    let exists = yield DBconection_1.connectpg.query(dbQuerys.queryExistComment, [id_comment]);
+    if (Number.parseInt(exists.rows[0].found) !== 1)
+        return { code: 404, result: "Post or comment not found!" };
+    let respHandler = { code: 404, result: 'not found!' };
+    yield DBconection_1.connectpg.query(dbQuerys.sqlDeleteComment, [id_comment])
+        .then(res => respHandler = { code: 200, result: 'Comment deleted!' })
+        .catch(e => respHandler = { code: 500, result: 'DB: Something went wrong trying to delete a comment!' });
+    return respHandler;
+});
+exports.retrieveCommentsByPostId = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+    let params = url.parse(req.url, true).query;
+    if (req.method !== 'GET')
+        return { code: 400, result: "Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to retrieve a post" };
+    if (!(params.post_id))
+        return { code: 404, result: "Sorry, we coulnd't handle this! U haven't submited a post id" };
+    let id_post = Number.parseInt(params.post_id);
+    if (Number.isNaN(id_post))
+        return { code: 400, result: "Sorry, we coulnd't handle this! post id should be a number" };
+    let exists = yield DBconection_1.connectpg.query(dbQuerys.queryExistPost, [id_post]);
+    if (Number.parseInt(exists.rows[0].found) !== 1)
+        return { code: 404, result: "Post not found!" };
+    let respHandler = { code: 404, result: 'Not found!' };
+    yield DBconection_1.connectpg.query(dbQuerys.queryCommentsByPostId, [id_post])
+        .then(res => respHandler = { code: 200, result: JSON.stringify(res.rows) })
+        .catch(e => respHandler = { code: 500, result: "DB: Something went wrong trying to retrieve a single post!" });
+    return respHandler;
 });

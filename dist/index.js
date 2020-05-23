@@ -24,15 +24,17 @@ const http = __importStar(require("http"));
 const url = __importStar(require("url"));
 const myRouter = __importStar(require("./myRouter"));
 let server = http.createServer(function (request, response) {
-    //let methodRequested = request.method as string;
-    //let queryresult=url.parse(request.url as string,true).query;
     const pathURL = url.parse(request.url, true).pathname;
     try {
         let actionResult = myRouter.selectAction(pathURL, request, response);
-        actionResult.then((value) => value.end(''));
+        actionResult.then((value) => {
+            response.writeHead(value.code, { 'Content-Type': 'text/plain' }).write(value.result);
+            response.end('');
+        });
     }
     catch (e) {
         console.log(e);
+        response.writeHead(404);
         response.end('\nError\n');
     }
 });

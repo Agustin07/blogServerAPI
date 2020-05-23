@@ -22,24 +22,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.selectAction = void 0;
 const blog_post = __importStar(require("./Handler/blog_post"));
 const post_comment = __importStar(require("./Handler/post_comment"));
+;
 function selectAction(path, request, response) {
     switch (path) {
         case '/blog_post/c/':
             return blog_post.insert(request, response);
-        case '/blog_post/r/':
-            return blog_post.retrieve(request, response);
+        case '/blog_post/r1/':
+            return blog_post.retrievePostById(request, response);
+        case '/blog_post/rall/':
+            return blog_post.retrieveAll(request);
         case '/blog_post/u/':
             return blog_post.update(request, response);
         case '/blog_post/d/':
             return blog_post.deletePost(request, response);
         case '/post_comment/c/':
             return post_comment.insert(request, response);
+        case '/post_comment/r/':
+            return post_comment.retrieveCommentsByPostId(request, response);
         case '/post_comment/u/':
             return post_comment.update(request, response);
         case '/post_comment/d/':
             return post_comment.deleteComment(request, response);
     }
-    response.writeHead(400, 'Bad request').write("Sorry, we coulnd't handle this! Route " + path + " is not valid!");
-    return Promise.reject(response.end(''));
+    return Promise.resolve({ code: 400, result: "Sorry, we coulnd't handle this! Route " + path + " is not valid!" });
 }
 exports.selectAction = selectAction;
