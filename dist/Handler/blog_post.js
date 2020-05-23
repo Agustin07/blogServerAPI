@@ -29,10 +29,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.retrieveAll = exports.retrievePostById = exports.deletePost = exports.update = exports.insert = void 0;
+const url = __importStar(require("url"));
+// ---- internal modules
 const DBconection_1 = require("../DBconection");
 const dbQuerys = __importStar(require("../DBconection"));
-const url = __importStar(require("url"));
-exports.insert = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+exports.insert = (req) => __awaiter(void 0, void 0, void 0, function* () {
     let params = url.parse(req.url, true).query;
     if (req.method !== 'POST')
         return { code: 400, result: "Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to create a post" };
@@ -49,7 +50,7 @@ exports.insert = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
         .catch(e => respHandler = { code: 500, result: "DB: Something went wrong trying to insert!" });
     return respHandler;
 });
-exports.update = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+exports.update = (req) => __awaiter(void 0, void 0, void 0, function* () {
     let params = url.parse(req.url, true).query;
     if (req.method !== 'PUT')
         return { code: 400, result: "Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to update a post" };
@@ -72,7 +73,7 @@ exports.update = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
         .catch(e => respHandler = { code: 500, result: "DB: Something went wrong trying to update!" });
     return respHandler;
 });
-exports.deletePost = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+exports.deletePost = (req) => __awaiter(void 0, void 0, void 0, function* () {
     let params = url.parse(req.url, true).query;
     if (req.method !== 'DELETE')
         return { code: 400, result: "Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to delete a post" };
@@ -90,7 +91,7 @@ exports.deletePost = (req, resp) => __awaiter(void 0, void 0, void 0, function* 
         .catch(e => respHandler = { code: 500, result: "DB: Something went wrong trying to delete!" });
     return respHandler;
 });
-exports.retrievePostById = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+exports.retrievePostById = (req) => __awaiter(void 0, void 0, void 0, function* () {
     let params = url.parse(req.url, true).query;
     if (req.method !== 'GET')
         return { code: 400, result: "Sorry, we coulnd't handle this! Invalid method " + req.method + " at traying to retrieve a post" };

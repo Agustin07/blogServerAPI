@@ -1,16 +1,56 @@
-Request insert:
+--- RESQUEST EXAMPLES ---  
 
-localhost:7000/blog_post/c/?post_title=Looking for Alaska is amazing&post_content=Hi, first of al i want to say that I really love that book!&post_author=Agustin M.
+INSERT A POST :
 
-localhost:7000/blog_post/c/?post_title=Normalization is amazing&post_content=Is a process of efficiently organizing data in a database&post_author=Fati
+localhost:7000/blog_post/c/?post_title=4 things you can do with Servers&post_content=Servers are so usefull nowdays in this times...&post_author=Agustin M.
 
-localhost:7000/blog_post/c/?post_title=Save the world is an amazing game!&post_content=STW better than playing Battle Royal&post_author=Agustin M.
+localhost:7000/blog_post/c/?post_title=How to Write a Blog Post: A Step-by-Step Guide&post_content=Review a step-by-step guide plus useful templates to learn how to write an effective blog post for your target audience and customers.&post_author=Dani
 
-localhost:7000/blog_post/c/?post_title=My Aunt is amazing!&post_content=I love how my aunt cooks&post_author=Adri
+localhost:7000/blog_post/c/?post_title=A Little Clojure&post_content=So let’s learn just a little bit of clojure. This expression: (1 2) represents the list containing the integers 1 and 2 in that order. &post_author=Robert C. Martin
 
-Request update:
+localhost:7000/blog_post/c/?post_title=What They Thought of Programmers.&post_content=It is interesting and educational to go back in time and look at how programmers were represented in popular culture. What did they think of us? Did they know who were?&post_author=Robert C. Martin
 
-localhost:7000/blog_post/u/?post_id=4&post_title=Im hungry!&post_content=Lets talk about food, my passion
+localhost:7000/blog_post/c/?post_title=Bobby Tables&post_content=I want you to think about just what a supremely bad idea it is to use a textual data access language.&post_author=Robert C. Martin
 
-localhost:7000/blog_post/u/?post_id=3&post_title=Time to sleep&post_content=Before sleep you must...
 
+UPDATE A POST :
+
+localhost:7000/blog_post/u/?post_id=1&post_title=5 things you can do with Servers&post_content=Servers are so usefull nowdays in this time, we gona start with...
+
+localhost:7000/blog_post/u/?post_id=2&post_title=How to Write a Blog Post: A Step-by-Step Guide&post_content=Review a guide plus useful templates to learn how to write an effective blog post for your target audience and customers.
+
+INSERT A COMMENT :
+
+localhost:7000/post_comment/c/?post_id=1&comment=I have my own server!&username=Wali
+
+localhost:7000/post_comment/c/?post_id=1&comment=I am a programer!&username=Agustin M.
+
+localhost:7000/post_comment/c/?post_id=4&comment=I am a programer too!&username=Ale
+
+localhost:7000/post_comment/c/?post_id=4&comment=I am not a programer :C&username=Fati
+
+localhost:7000/post_comment/c/?post_id=2&comment=I have a blog post! :D&username=Alan
+
+UPDATE A COMMENT :
+
+localhost:7000/post_comment/u/?comment_id=5&comment=I have a blog post!!!!:D&username=Alan
+
+DELETE A POST :
+
+localhost:7000/blog_post/d/?post_id=2
+
+DELETE A COMMENT :
+
+localhost:7000/post_comment/d/?comment_id=3
+
+RETRIEVE ONE POST BY POST_ID :
+
+localhost:7000/blog_post/r1/?post_id=4
+
+RETRIEVE COMMENTS OF ONE POST BY POST_ID :
+
+localhost:7000/post_comment/r/?post_id=5
+
+RETRIEVE ALL THE POSTS WITH ITS COMMENTS :
+
+localhost:7000/blog_post/rall/

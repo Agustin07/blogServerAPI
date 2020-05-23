@@ -1,7 +1,11 @@
+
+// ---- npm modules
+import { IncomingMessage } from "http";
+import * as url from "url";
+
+// ---- internal modules
 import { connectpg } from "../DBconection"
 import * as dbQuerys from "../DBconection"
-import { IncomingMessage, ServerResponse } from "http";
-import * as url from "url";
 import {responseHandler} from "../myRouter";
 
 interface postComment {
@@ -12,7 +16,7 @@ interface postComment {
     date_posted ?: Date
 }
 
-export const insert = async (req: IncomingMessage,resp: ServerResponse) : Promise<responseHandler> => {
+export const insert = async (req: IncomingMessage) : Promise<responseHandler> => {
     let params=url.parse(req.url as string,true).query;
 
     if(req.method!=='POST') return { code :400 , result : "Sorry, we coulnd't handle this!  Invalid method "+req.method+" at traying to create a comment"};
@@ -41,7 +45,7 @@ export const insert = async (req: IncomingMessage,resp: ServerResponse) : Promis
 }
 
 
-export const update = async (req: IncomingMessage,resp: ServerResponse) : Promise<responseHandler> => {
+export const update = async (req: IncomingMessage) : Promise<responseHandler> => {
     let params=url.parse(req.url as string,true).query;
 
     if(req.method!=='PUT') return { code :400, result : "Sorry, we coulnd't handle this! Invalid method "+req.method+" at traying to update a comment"};
@@ -69,7 +73,7 @@ export const update = async (req: IncomingMessage,resp: ServerResponse) : Promis
     return respHandler;
 }
 
-export const deleteComment = async (req : IncomingMessage, resp : ServerResponse ) : Promise<responseHandler> => {
+export const deleteComment = async (req : IncomingMessage) : Promise<responseHandler> => {
     let params=url.parse(req.url as string,true).query;
 
     if(req.method!=='DELETE') return { code :400 , result : "Sorry, we coulnd't handle this! Invalid method "+req.method+" at traying to delete a comment"};
@@ -92,7 +96,7 @@ export const deleteComment = async (req : IncomingMessage, resp : ServerResponse
 }
 
 
-export const retrieveCommentsByPostId =  async (req : IncomingMessage, resp : ServerResponse ) : Promise<responseHandler> => {
+export const retrieveCommentsByPostId =  async (req : IncomingMessage ) : Promise<responseHandler> => {
     let params=url.parse(req.url as string,true).query;
 
     if ( req.method !== 'GET' ) return { code :400, result : "Sorry, we coulnd't handle this! Invalid method "+req.method+" at traying to retrieve a post"};

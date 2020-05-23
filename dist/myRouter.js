@@ -20,29 +20,30 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.selectAction = void 0;
+// ---- internal modules
 const blog_post = __importStar(require("./Handler/blog_post"));
 const post_comment = __importStar(require("./Handler/post_comment"));
 ;
-function selectAction(path, request, response) {
+function selectAction(path, request) {
     switch (path) {
         case '/blog_post/c/':
-            return blog_post.insert(request, response);
+            return blog_post.insert(request);
         case '/blog_post/r1/':
-            return blog_post.retrievePostById(request, response);
+            return blog_post.retrievePostById(request);
         case '/blog_post/rall/':
             return blog_post.retrieveAll(request);
         case '/blog_post/u/':
-            return blog_post.update(request, response);
+            return blog_post.update(request);
         case '/blog_post/d/':
-            return blog_post.deletePost(request, response);
+            return blog_post.deletePost(request);
         case '/post_comment/c/':
-            return post_comment.insert(request, response);
+            return post_comment.insert(request);
         case '/post_comment/r/':
-            return post_comment.retrieveCommentsByPostId(request, response);
+            return post_comment.retrieveCommentsByPostId(request);
         case '/post_comment/u/':
-            return post_comment.update(request, response);
+            return post_comment.update(request);
         case '/post_comment/d/':
-            return post_comment.deleteComment(request, response);
+            return post_comment.deleteComment(request);
     }
     return Promise.resolve({ code: 400, result: "Sorry, we coulnd't handle this! Route " + path + " is not valid!" });
 }

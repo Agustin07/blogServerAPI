@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sqlDeleteComment = exports.sqlUpdateComment = exports.queryExistComment = exports.sqlInsertComment = exports.queryCommentsByPostId = exports.queryAllComments = exports.queryPostById = exports.sqlDeletePost = exports.sqlUpdatePost = exports.sqlInsertPost = exports.queryExistPost = exports.queryAllPost = exports.connectpg = void 0;
+// ---- external modules
 const pg_1 = require("pg");
 exports.connectpg = new pg_1.Pool({
     user: 'postgres',
@@ -12,7 +13,7 @@ exports.connectpg = new pg_1.Pool({
 //     ----------------  BLOG POSTS SCRIPTS   ----------------   //
 exports.queryAllPost = " SELECT P.ID_POST AS POST_ID, P.TITLE_TEXT AS POST_TITLE, P.BODY_TEXT AS POST_CONTENT, P.AUTHOR AS POST_AUTHOR, P.DATE_POSTED AS POSTED_DATE "
     + " FROM BLOG_POST P "
-    + " WHERE P.ISDELETED=FALSE ORDER BY P.DATE_POSTED ASC;";
+    + " WHERE P.ISDELETED=FALSE ORDER BY P.DATE_POSTED DESC;";
 exports.queryExistPost = ' SELECT COUNT(*) AS FOUND FROM BLOG_POST WHERE ID_POST=$1 AND ISDELETED=FALSE LIMIT 1;';
 exports.sqlInsertPost = " INSERT INTO BLOG_POST (TITLE_TEXT, BODY_TEXT, AUTHOR) "
     + " VALUES ($1,$2,$3); ";

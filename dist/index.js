@@ -19,14 +19,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// ---- external modules
+// ---- npm modules
 const http = __importStar(require("http"));
 const url = __importStar(require("url"));
+// ---- internal modules
 const myRouter = __importStar(require("./myRouter"));
 let server = http.createServer(function (request, response) {
     const pathURL = url.parse(request.url, true).pathname;
     try {
-        let actionResult = myRouter.selectAction(pathURL, request, response);
+        let actionResult = myRouter.selectAction(pathURL, request);
         actionResult.then((value) => {
             response.writeHead(value.code, { 'Content-Type': 'text/plain' }).write(value.result);
             response.end('');
@@ -35,7 +36,7 @@ let server = http.createServer(function (request, response) {
     catch (e) {
         console.log(e);
         response.writeHead(404);
-        response.end('\nError\n');
+        response.end('\nNOT FOUND\n');
     }
 });
 server.listen(7000);

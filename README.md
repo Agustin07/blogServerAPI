@@ -32,11 +32,6 @@ Using DELETE to Delete a Post:
 localhost:7000/blog_post/d/?post_id=6
 ```
 
-### Additional information:
-
-- You can find the realted postgresql script on: blogDB.sql
-- You can find some http request for testing on: test.txt
-
 ## How to write a request:
 
 | Action |Method  |   Route | Description                         |
@@ -52,3 +47,26 @@ localhost:7000/blog_post/d/?post_id=6
 ```
 localhost:7000/post_comment/c/?post_id=1&comment=I am a programer!&username=Agustin M.
 ```
+
+
+## Blog Post Parameters
+| NAME | TYPE  |  
+|----------------|---------------|
+|post_id|   number        |     
+|post_title         |    string       | 
+|post_content        | string|
+|post_author |  string |  
+
+
+## Comment Parameters
+| NAME | TYPE  |  
+|----------------|---------------|
+|comment_id|   number        |     
+|post_id        |    number       | 
+|comment        | string|
+|username|  string |  
+
+### Additional information:
+
+- You can find the realted postgresql script on: blogDB.sql
+- You can find some http request for testing on: test.txt

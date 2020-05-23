@@ -1,4 +1,7 @@
+
+// ---- external modules
 import { Pool } from 'pg'
+
 
 export const connectpg = new Pool({
     user:'postgres',
